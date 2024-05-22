@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <title>owner</title>
+  <meta charset="UTF-8">
+  <!-- Below is the initialization snippet for my Firebase project. It will vary for each project -->
+
+  <script src="https://www.gstatic.com/firebasejs/10.10.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.10.0/firebase-database-compat.js"></script>
+  <script>
+    // Initialize Firebase
+    const firebaseConfig = {
+      apiKey: "AIzaSyD1ENbB26QshboM30nJtX6PFWgQzj9DFps",
+      authDomain: "projectujicoba-a1b33.firebaseapp.com",
+      databaseURL: "https://projectujicoba-a1b33-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "projectujicoba-a1b33",
+      storageBucket: "projectujicoba-a1b33.appspot.com",
+      messagingSenderId: "425898629764",
+      appId: "1:425898629764:web:2a2a3af4f32cbe7c1c00d1"
+    };
+
+    // Initialize Firebase
+    const defaultProject = firebase.initializeApp(firebaseConfig);
+  </script>
+  <link href="style.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  <link href="https://cdn.datatables.net/1.10.20/css/dataTables.bootstrap4.min.css" rel="stylesheet"
+    crossorigin="anonymous" />
+  <link href="https://cdn.datatables.net/responsive/2.2.6/css/responsive.dataTables.min.css" rel="stylesheet">
+</head>
+
+<body>
+  <div class="heading">
+    <h1>DESA WISATA ALAMENDAH</h1>
+  </div>
+  <div class="container">
+    <div class="card">
+      <div class="card-header">
+        <i class="fa fa-table mr-1"></i>
+        Monitoring Summary
+      </div>
+      <div class="card-body">
+        <button type="button" class="btn btn-primary" id="export">
+          <i class="fa fa-download" aria-hidden="true"></i>
+        </button>
+        <div class="table-responsive">
+          <table class="table table-bordered display responsive nowrap" id="buttonTable" width="100%" cellspacing="0"
+            data-order="[]">
+            <thead>
+              <tr>
+                <th>User ID</th>
+                <th>Device Id</th>
+                <th>Time</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="card mt-4">
+      <div class="card-header">
+        <i class="fa fa-table mr-1"></i>
+        LIVE STATUS
+      </div>
+      <div class="card-body users">
+
+      </div>
+    </div>
+  </div>
+
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+  <script src="https://cdn.datatables.net/1.10.20/js/jquery.dataTables.min.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.datatables.net/1.10.20/js/dataTables.bootstrap4.min.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.datatables.net/responsive/2.2.6/js/dataTables.responsive.min.js"></script>
+  <script src="https://cdn.datatables.net/buttons/1.5.2/js/dataTables.buttons.min.js"></script>
+  <script src="https://cdn.datatables.net/buttons/1.5.2/js/buttons.flash.min.js"></script>
+  <script src="https://cdn.datatables.net/buttons/1.5.2/js/buttons.html5.min.js"></script>
+  <script src="https://cdn.datatables.net/buttons/1.5.2/js/buttons.print.min.js"></script>
+
+  <script>
+    $(function () {
+      $('.users').html('No data available');
+      document.getElementById("export").onclick = function () { exportCSV() };
+
+      function exportCSV() {
+        //// export CSV
+        console.log("exportCSV");
+        $('#buttonTable').DataTable().button(0).trigger();
+      }
+
+      var button_table = $('#buttonTable').DataTable({
+        "ordering": false,
+        "paging": false,
+        buttons: [
+          {
+            extend: 'csv',
+            filename: 'file_name',
+            extension: '.csv'
+          }
+        ],
+        initComplete: function () {
+          $('.buttons-csv').hide();
+        }
+      });
+
+      // Map of UID to new IDs
+      const uidMap = {
+        "1144117807": "A1",
+        "10311135234": "A2",
+        "73310136142": "A3",
+        "03915132142": "A4",
+        "53100510144": "A5",
+        "4344129142": "B1",
+        "4319122142": "B2",
+        "931415610144": "B3",
+        "10380512144": "B4",
+        "15335133142": "B5",
+        "7371166144": "C1",
+        "03312136142": "C2",
+        "6354611144": "C3",
+        "83014123142": "C4",
+        "438258144": "C5",
+        "431410126142": "D1",
+        "133312125142": "D2",
+        "13311765144": "D3",
+        "6310458144": "D4",
+        "9310131114142": "D5"
+      };
+
+      firebase.database().ref('/').on('value', function (snap) {
+        if (snap.val()) { // Check if snap.val() is not null
+          if (snap.val().users) {
+            let obj = snap.val().users;
+            console.log(obj);
+            $('.users').html('');
+            if (Object.keys(obj).length > 0) {
+              Object.keys(obj).forEach(key => {
+                // Translate UID using the map
+                let uid = uidMap[key] || key;
+                $('.users').append(`
+                                <div class="live">
+                                    <img src="./img/checkin.png" width="150px">
+                                    <ul>
+                                        <li><h3>UID: ${uid}</h3></li>
+                                        <li><img id="true${key}" width="50px" src="./img/tick.png"></li>
+                                        <li><img id="false${key}" width="50px" src="./img/cross.png"></li>
+                                    </ul>
+                                </div>
+                            `);
+                if (obj[key] == 1) {
+                  $('#true' + key).show();
+                  $('#false' + key).hide();
+                } else {
+                  $('#true' + key).hide();
+                  $('#false' + key).show();
+                }
+              });
+            }
+          }
+          if (snap.val().attendence) {
+            button_table.clear().draw();
+
+            let arr = Object.values(snap.val().attendence);
+            console.log(arr);
+            arr.forEach(function (elem, i) {
+              // Translate UID using the map
+              let uid = uidMap[elem.uid] || elem.uid;
+              var row = `<tr>
+                            <td>${uid}</td>
+                            <td>${elem.id}</td>
+                            <td>${new Date(elem.time.slice(0, -1)).toLocaleString()}</td>
+                            <td id="state${new Date(elem.time).getTime()}"></td>                
+                        </tr>`;
+              button_table.rows.add($(row)).draw();
+              if (elem.status) {
+                $('#state' + new Date(elem.time).getTime()).html('<span class="badge badge-success">Check In</span>');
+              } else {
+                $('#state' + new Date(elem.time).getTime()).html('<span class="badge badge-danger">Check Out</span>');
+              }
+            });
+          }
+        } else {
+          console.error("Received null value from the database.");
+        }
+      });
+    });
+  </script>
+
+</body>
+
+</html>
